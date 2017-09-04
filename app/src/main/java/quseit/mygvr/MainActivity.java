@@ -41,6 +41,9 @@ public class MainActivity extends AppCompatActivity {
     public void ShowVR(View view){
         startActivity(new Intent(this,Main4Activity.class));
     }
+    public void ShowVRC(View view){
+        startActivity(new Intent(this,Main5Activity.class));
+    }
 
 
 

@@ -14,7 +14,7 @@
         android:onClick="ShowOne"
         android:layout_width="match_parent"
         android:layout_height="70dp"
-        android:text="跳转"
+        android:text="跳转VR_pic"
         android:id="@+id/button" />
 
     <Button
@@ -30,9 +30,18 @@
         android:onClick="ShowVR"
         android:layout_width="match_parent"
         android:layout_height="70dp"
-        android:text="跳转VR"
+        android:text="跳转3D_VR"
         android:id="@+id/button3"
         android:layout_below="@+id/button2"
+        android:layout_alignParentStart="true" />
+
+    <Button
+        android:onClick="ShowVRC"
+        android:layout_width="match_parent"
+        android:layout_height="70dp"
+        android:text="跳转3D_VRClient"
+        android:id="@+id/button4"
+        android:layout_below="@+id/button3"
         android:layout_alignParentStart="true" />
     <!--<Button-->
         <!--android:layout_width="match_parent"-->

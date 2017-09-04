@@ -5,10 +5,11 @@ import android.content.res.AssetManager;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.util.Pair;
+import android.view.View;
 import android.widget.Toast;
 
 import com.google.vr.sdk.widgets.pano.VrPanoramaEventListener;
@@ -19,12 +20,16 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+
+//展示全景图片例子
 public class Main2Activity extends AppCompatActivity {
     private String TAG="vr_test";
     private VrPanoramaView panoramaView;
     public boolean loadImageSuccessful;
     /** Tracks the file to be loaded across the lifetime of this app. **/
     private Uri fileUri;
+    private String VR_PIC="timbbg.jpg";
+    private boolean changepic=false;
     /** Configuration information for the panorama. **/
     private VrPanoramaView.Options panoOptions = new VrPanoramaView.Options();
     private ImageLoaderTask backgroundImageLoaderTask;
@@ -34,7 +39,6 @@ public class Main2Activity extends AppCompatActivity {
         setContentView(R.layout.activity_main2);
         panoramaView = (VrPanoramaView) findViewById(R.id.vr_pic);
         panoramaView.setEventListener(new ActivityEventListener());
-
 
         handleIntent(getIntent());
     }
@@ -50,7 +54,16 @@ public class Main2Activity extends AppCompatActivity {
         handleIntent(intent);
 
     }
-
+    public void changeVrPic(View view){
+        if (changepic){
+            VR_PIC="timbbg.jpg";
+            changepic=false;
+        }else{
+            VR_PIC="tvimg.jpg";
+            changepic=true;
+        }
+        handleIntent(getIntent());
+    }
     private void handleIntent(Intent intent) {
         // Determine if the Intent contains a file to load.
         if (Intent.ACTION_VIEW.equals(intent.getAction())) {
@@ -94,11 +107,14 @@ public class Main2Activity extends AppCompatActivity {
             InputStream istr = null;
             if (fileInformation == null || fileInformation.length < 1
                     || fileInformation[0] == null || fileInformation[0].first == null) {
+                //获取asset文件夹里面的图片资源
                 AssetManager assetManager = getAssets();
                 try {
-                    istr = assetManager.open("andes.jpg");
+                    istr = assetManager.open(VR_PIC);
                     panoOptions = new VrPanoramaView.Options();
-                    panoOptions.inputType = VrPanoramaView.Options.TYPE_STEREO_OVER_UNDER;
+                    //TYPE_MONO模式下：图片资源是一副vr全景视图，
+                    // 而TYPE_STEREO_OVER_UNDER模式则是上下两张拼接的相同VR全景视图
+                    panoOptions.inputType = VrPanoramaView.Options.TYPE_MONO;
                 } catch (IOException e) {
                     Log.e(TAG, "Could not decode default bitmap: " + e);
                     return false;

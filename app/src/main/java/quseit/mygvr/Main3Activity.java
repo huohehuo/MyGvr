@@ -18,6 +18,8 @@ import com.google.vr.sdk.widgets.video.VrVideoView;
 
 import java.io.IOException;
 
+
+//展示全景视频例子
 public class Main3Activity extends AppCompatActivity {
     private String TAG="vr_test";
     private static final String STATE_IS_PAUSED = "isPaused";

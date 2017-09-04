@@ -25,6 +25,8 @@ import java.nio.FloatBuffer;
 
 import javax.microedition.khronos.egl.EGLConfig;
 
+
+//三维空间寻找方块游戏例子
 public class Main4Activity extends GvrActivity implements GvrView.StereoRenderer {
 
     protected float[] modelCube;
@@ -212,12 +214,12 @@ public class Main4Activity extends GvrActivity implements GvrView.StereoRenderer
 
     @Override
     public void onRendererShutdown() {
-        Log.i(TAG, "onRendererShutdown");
+        Log.e(TAG, "onRendererShutdown");
     }
 
     @Override
     public void onSurfaceChanged(int width, int height) {
-        Log.i(TAG, "onSurfaceChanged");
+        Log.e(TAG, "onSurfaceChanged");
     }
 
     /**
@@ -230,7 +232,7 @@ public class Main4Activity extends GvrActivity implements GvrView.StereoRenderer
      */
     @Override
     public void onSurfaceCreated(EGLConfig config) {
-        Log.i(TAG, "onSurfaceCreated");
+        Log.e(TAG, "onSurfaceCreated");
         GLES20.glClearColor(0.1f, 0.1f, 0.1f, 0.5f); // Dark background so text shows up well.
 
         ByteBuffer bbVertices = ByteBuffer.allocateDirect(WorldLayoutData.CUBE_COORDS.length * 4);
@@ -239,12 +241,14 @@ public class Main4Activity extends GvrActivity implements GvrView.StereoRenderer
         cubeVertices.put(WorldLayoutData.CUBE_COORDS);
         cubeVertices.position(0);
 
+        //未处于视线中心的五颜六色方块
         ByteBuffer bbColors = ByteBuffer.allocateDirect(WorldLayoutData.CUBE_COLORS.length * 4);
         bbColors.order(ByteOrder.nativeOrder());
         cubeColors = bbColors.asFloatBuffer();
         cubeColors.put(WorldLayoutData.CUBE_COLORS);
         cubeColors.position(0);
 
+        //处于视线中心时的方块颜色（全为yellow）
         ByteBuffer bbFoundColors =
                 ByteBuffer.allocateDirect(WorldLayoutData.CUBE_FOUND_COLORS.length * 4);
         bbFoundColors.order(ByteOrder.nativeOrder());
@@ -252,25 +256,28 @@ public class Main4Activity extends GvrActivity implements GvrView.StereoRenderer
         cubeFoundColors.put(WorldLayoutData.CUBE_FOUND_COLORS);
         cubeFoundColors.position(0);
 
+        //正常状态下的正多面体
         ByteBuffer bbNormals = ByteBuffer.allocateDirect(WorldLayoutData.CUBE_NORMALS.length * 4);
         bbNormals.order(ByteOrder.nativeOrder());
         cubeNormals = bbNormals.asFloatBuffer();
         cubeNormals.put(WorldLayoutData.CUBE_NORMALS);
         cubeNormals.position(0);
 
-        // make a floor
+        // make a floor底部地面布局
         ByteBuffer bbFloorVertices = ByteBuffer.allocateDirect(WorldLayoutData.FLOOR_COORDS.length * 4);
         bbFloorVertices.order(ByteOrder.nativeOrder());
         floorVertices = bbFloorVertices.asFloatBuffer();
         floorVertices.put(WorldLayoutData.FLOOR_COORDS);
         floorVertices.position(0);
 
+        //正常状态的底部地面
         ByteBuffer bbFloorNormals = ByteBuffer.allocateDirect(WorldLayoutData.FLOOR_NORMALS.length * 4);
         bbFloorNormals.order(ByteOrder.nativeOrder());
         floorNormals = bbFloorNormals.asFloatBuffer();
         floorNormals.put(WorldLayoutData.FLOOR_NORMALS);
         floorNormals.position(0);
 
+        //底部地面颜色设置
         ByteBuffer bbFloorColors = ByteBuffer.allocateDirect(WorldLayoutData.FLOOR_COLORS.length * 4);
         bbFloorColors.order(ByteOrder.nativeOrder());
         floorColors = bbFloorColors.asFloatBuffer();
@@ -289,10 +296,13 @@ public class Main4Activity extends GvrActivity implements GvrView.StereoRenderer
 
         checkGLError("Cube program");
 
+        //获取着色器程序中，指定为attribute类型变量的id。
+        //获取指向着色器中aPosition的index
         cubePositionParam = GLES20.glGetAttribLocation(cubeProgram, "a_Position");
         cubeNormalParam = GLES20.glGetAttribLocation(cubeProgram, "a_Normal");
         cubeColorParam = GLES20.glGetAttribLocation(cubeProgram, "a_Color");
 
+        //获取着色器程序中，指定为uniform类型变量的id。
         cubeModelParam = GLES20.glGetUniformLocation(cubeProgram, "u_Model");
         cubeModelViewParam = GLES20.glGetUniformLocation(cubeProgram, "u_MVMatrix");
         cubeModelViewProjectionParam = GLES20.glGetUniformLocation(cubeProgram, "u_MVP");
@@ -452,11 +462,13 @@ public class Main4Activity extends GvrActivity implements GvrView.StereoRenderer
      * <p>We've set all of our transformation matrices. Now we simply pass them into the shader.
      */
     public void drawCube() {
+        //使用shader程序
         GLES20.glUseProgram(cubeProgram);
 
         GLES20.glUniform3fv(cubeLightPosParam, 1, lightPosInEyeSpace, 0);
 
         // Set the Model in the shader, used to calculate lighting
+        //// 将最终变换矩阵传入shader程序
         GLES20.glUniformMatrix4fv(cubeModelParam, 1, false, modelCube, 0);
 
         // Set the ModelView in the shader, used to calculate lighting
@@ -478,7 +490,7 @@ public class Main4Activity extends GvrActivity implements GvrView.StereoRenderer
         GLES20.glEnableVertexAttribArray(cubePositionParam);
         GLES20.glEnableVertexAttribArray(cubeNormalParam);
         GLES20.glEnableVertexAttribArray(cubeColorParam);
-
+        // 图形绘制
         GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, 36);
 
         // Disable vertex arrays
@@ -513,6 +525,7 @@ public class Main4Activity extends GvrActivity implements GvrView.StereoRenderer
         GLES20.glEnableVertexAttribArray(floorNormalParam);
         GLES20.glEnableVertexAttribArray(floorColorParam);
 
+        //绘制面 GLES20.TRIANGLES
         GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, 24);
 
         GLES20.glDisableVertexAttribArray(floorPositionParam);
@@ -527,7 +540,7 @@ public class Main4Activity extends GvrActivity implements GvrView.StereoRenderer
      */
     @Override
     public void onCardboardTrigger() {
-        Log.i(TAG, "onCardboardTrigger");
+        Log.e(TAG, "onCardboardTrigger");
 
         if (isLookingAtObject()) {
             successSourceId = gvrAudioEngine.createStereoSound(SUCCESS_SOUND_FILE);
@@ -556,6 +569,7 @@ public class Main4Activity extends GvrActivity implements GvrView.StereoRenderer
         objectDistance =
                 (float) Math.random() * (MAX_MODEL_DISTANCE - MIN_MODEL_DISTANCE) + MIN_MODEL_DISTANCE;
         float objectScalingFactor = objectDistance / oldObjectDistance;
+        //物体按坐标缩放比例缩放
         Matrix.scaleM(rotationMatrix, 0, objectScalingFactor, objectScalingFactor, objectScalingFactor);
         Matrix.multiplyMV(posVec, 0, rotationMatrix, 0, modelCube, 12);
 

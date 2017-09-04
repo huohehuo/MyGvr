@@ -16,7 +16,7 @@
 
 package quseit.mygvr;
 
-/**
+/**       //三维空间方块的绘制资源类
  * Contains vertex, normal and color data.
  */
 public final class WorldLayoutData {
