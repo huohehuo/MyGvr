@@ -1,5 +1,4 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
-
 buildscript {
     repositories {
         jcenter()
@@ -11,14 +10,12 @@ buildscript {
         // in the individual module build.gradle files
     }
 }
-
 allprojects {
     repositories {
         jcenter()
         mavenLocal()
     }
 }
-
 task clean(type: Delete) {
     delete rootProject.buildDir
 }
@@ -29,7 +26,6 @@ task extractAudioSo(type: Copy) {
     into "${project.rootDir}/libraries/"
     include "jni/**/libgvr_audio.so"
 }
-
 task extractGvrSo(type: Copy) {
     from zipTree("${project.rootDir}/libraries/sdk-base-1.80.0.aar")
     into "${project.rootDir}/libraries/"
@@ -39,7 +35,6 @@ task extractGvrSo(type: Copy) {
 task extractNdk { }
 extractNdk.dependsOn extractAudioSo
 extractNdk.dependsOn extractGvrSo
-
 task deleteNdk(type: Delete) {
     delete "${project.rootDir}/libraries/jni"
 }
