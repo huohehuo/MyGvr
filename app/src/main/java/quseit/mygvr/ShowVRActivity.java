@@ -8,7 +8,7 @@ import com.google.vr.sdk.base.AndroidCompat;
 import com.google.vr.sdk.controller.Controller;
 import com.google.vr.sdk.controller.ControllerManager;
 
-public class Main5Activity extends AppCompatActivity {
+public class ShowVRActivity extends AppCompatActivity {
     private static final String TAG = "ControllerClicent";
 
     // These two objects are the primary APIs for interacting with the Daydream controller.

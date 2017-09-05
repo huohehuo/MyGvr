@@ -22,7 +22,7 @@ import java.io.InputStream;
 
 
 //展示全景图片例子
-public class Main2Activity extends AppCompatActivity {
+public class PicARActivity extends AppCompatActivity {
     private String TAG="vr_test";
     private VrPanoramaView panoramaView;
     public boolean loadImageSuccessful;
@@ -155,7 +155,7 @@ public class Main2Activity extends AppCompatActivity {
         public void onLoadError(String errorMessage) {
             loadImageSuccessful = false;
             Toast.makeText(
-                    Main2Activity.this, "Error loading pano: " + errorMessage, Toast.LENGTH_LONG)
+                    PicARActivity.this, "Error loading pano: " + errorMessage, Toast.LENGTH_LONG)
                     .show();
             Log.e(TAG, "Error loading pano: " + errorMessage);
         }

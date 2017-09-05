@@ -20,7 +20,7 @@ import java.io.IOException;
 
 
 //展示全景视频例子
-public class Main3Activity extends AppCompatActivity {
+public class VideoVRActivity extends AppCompatActivity {
     private String TAG="vr_test";
     private static final String STATE_IS_PAUSED = "isPaused";
     private static final String STATE_PROGRESS_TIME = "progressTime";
@@ -224,7 +224,7 @@ public class Main3Activity extends AppCompatActivity {
             // An error here is normally due to being unable to decode the video format.
             loadVideoStatus = LOAD_VIDEO_STATUS_ERROR;
             Toast.makeText(
-                    Main3Activity.this, "Error loading video: " + errorMessage, Toast.LENGTH_LONG)
+                    VideoVRActivity.this, "Error loading video: " + errorMessage, Toast.LENGTH_LONG)
                     .show();
             Log.e(TAG, "Error loading video: " + errorMessage);
         }
@@ -291,7 +291,7 @@ public class Main3Activity extends AppCompatActivity {
                     @Override
                     public void run() {
                         Toast
-                                .makeText(Main3Activity.this, "Error opening file. ", Toast.LENGTH_LONG)
+                                .makeText(VideoVRActivity.this, "Error opening file. ", Toast.LENGTH_LONG)
                                 .show();
                     }
                 });

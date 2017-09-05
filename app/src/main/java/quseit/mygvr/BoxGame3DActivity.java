@@ -27,12 +27,12 @@ import javax.microedition.khronos.egl.EGLConfig;
 
 
 //三维空间寻找方块游戏例子
-public class Main4Activity extends GvrActivity implements GvrView.StereoRenderer {
+public class BoxGame3DActivity extends GvrActivity implements GvrView.StereoRenderer {
 
     protected float[] modelCube;
     protected float[] modelPosition;
 
-    private static final String TAG = "Main4Activity";
+    private static final String TAG = "BoxGame3DActivity";
 
     private static final float Z_NEAR = 0.1f;
     private static final float Z_FAR = 100.0f;
