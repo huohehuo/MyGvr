@@ -166,6 +166,7 @@ public class OrientationView extends GLSurfaceView {
     private FloatBuffer boxColors;
 
     // Initialize shaders and geometry.
+    //只会调用一次，多用于设置view的OpenGLES环境
     @Override
     public final void onSurfaceCreated(GL10 unused, EGLConfig config) {
       // Set up shaders
@@ -252,6 +253,7 @@ public class OrientationView extends GLSurfaceView {
     }
 
     // Set up GL environment.
+    // 如果view的几和形状发生变化了就调用，例如当竖屏变为横屏时
     @Override
     public final void onSurfaceChanged(GL10 gl, int width, int height) {
       // Camera.
@@ -270,6 +272,7 @@ public class OrientationView extends GLSurfaceView {
     private final float[] tmpMatrix1 = new float[16];
     private final float[] tmpMatrix2 = new float[16];
 
+    //每次View被重绘时被调用。
     @Override
     public final void onDrawFrame(GL10 unused) {
       GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
