@@ -53,11 +53,11 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".Main2Activity"
+            android:name=".PicARActivity"
             android:launchMode="singleTask" />
-        <activity android:name=".Main3Activity" />
+        <activity android:name=".VideoVRActivity" />
         <activity
-            android:name=".Main4Activity"
+            android:name=".BoxGame3DActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:resizeableActivity="false"
             android:screenOrientation="landscape">
@@ -79,7 +79,29 @@
                 <category android:name="com.google.intent.category.DAYDREAM" />
             </intent-filter>
         </activity>
-        <activity android:name=".Main5Activity"></activity>
+        <activity android:name=".ShowVRActivity" />
+        <activity android:name=".opengl.OpenGLActivity" />
+        <activity android:name=".TestActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:resizeableActivity="false"
+            android:screenOrientation="landscape">
+            <meta-data
+                android:name="com.google.android.vr.icon"
+                android:resource="@drawable/vr_icon" />
+            <meta-data
+                android:name="com.google.android.vr.icon_background"
+                android:resource="@drawable/vr_icon_background" />
+
+            <intent-filter>
+                <category android:name="com.google.intent.category.CARDBOARD" />
+                <!--
+                     The DAYDREAM category should only be declared by Activities that are Daydream
+                     compatible. Daydream compatible apps should typically use the Daydream
+                     controller APIs directly, however in this sample app we instead rely on
+                     Cardboard trigger emulation.
+                -->
+                <category android:name="com.google.intent.category.DAYDREAM" />
+            </intent-filter></activity>
     </application>
 
 </manifest>

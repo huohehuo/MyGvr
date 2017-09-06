@@ -9,7 +9,7 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     android:orientation="vertical"
-    tools:context="quseit.mygvr.Main3Activity">
+    tools:context="quseit.mygvr.VideoVRActivity">
     <com.google.vr.sdk.widgets.video.VrVideoView
         android:id="@+id/video_view"
         android:layout_width="match_parent"

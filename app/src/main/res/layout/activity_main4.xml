@@ -4,7 +4,7 @@
     android:id="@+id/activity_main4"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="quseit.mygvr.Main4Activity">
+    tools:context="quseit.mygvr.BoxGame3DActivity">
     <com.google.vr.sdk.base.GvrView
         android:id="@+id/gvr_view"
         android:layout_width="match_parent"

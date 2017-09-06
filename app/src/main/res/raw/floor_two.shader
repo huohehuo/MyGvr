@@ -14,13 +14,11 @@
  * limitations under the License.
  */
 
-attribute vec4 vPosition;
-attribute vec2 vCoordinate;
-uniform mat4 vMatrix;
+precision mediump float;
 
+uniform sampler2D vTexture;
 varying vec2 aCoordinate;
 
 void main(){
-    gl_Position=vMatrix*vPosition;
-    aCoordinate=vCoordinate;
+    gl_FragColor=texture2D(vTexture,aCoordinate);
 }

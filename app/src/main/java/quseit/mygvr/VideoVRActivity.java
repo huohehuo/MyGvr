@@ -1,5 +1,6 @@
 package quseit.mygvr;
 
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -69,6 +70,14 @@ public class VideoVRActivity extends AppCompatActivity {
         // Bind input and output objects for the view.
         videoWidgetView = (VrVideoView) findViewById(R.id.video_view);
         videoWidgetView.setEventListener(new ActivityEventListener());
+        //0：横屏普通模式，1：普通模式，2：全屏普通模式，3：VR模式
+        videoWidgetView.setDisplayMode(3);
+
+        videoWidgetView.setInfoButtonEnabled(false);//设置左侧信息原圈不可见
+        videoWidgetView.setFullscreenButtonEnabled(false);//设置全屏按钮不可见
+//        videoWidgetView.setStereoModeButtonEnabled(false);//设置立体眼镜模式按钮不可见
+        videoWidgetView.setTouchTrackingEnabled(false);//是否开启手触模式
+        videoWidgetView.setTransitionViewEnabled(false);//设置将手机放入盒子中的提示取消
 
         volumeToggle = (ImageButton) findViewById(R.id.volume_toggle);
         volumeToggle.setOnClickListener(new View.OnClickListener() {
@@ -300,5 +309,9 @@ public class VideoVRActivity extends AppCompatActivity {
 
             return true;
         }
+    }
+
+    public static void startVideo(Context context){
+        context.startActivity(new Intent(context,VideoVRActivity.class));
     }
 }

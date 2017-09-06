@@ -39,6 +39,9 @@ public class PicARActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main2);
         panoramaView = (VrPanoramaView) findViewById(R.id.vr_pic);
         panoramaView.setEventListener(new ActivityEventListener());
+        //0：横屏普通模式，1：普通模式，2：全屏普通模式，3：VR模式
+        panoramaView.setDisplayMode(3);
+        panoramaView.setTransitionViewEnabled(false);//设置将手机放入盒子中的提示取消
 
         handleIntent(getIntent());
     }

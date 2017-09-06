@@ -112,6 +112,7 @@ public class BoxGame3DActivity extends GvrActivity implements GvrView.StereoRend
      * @param type The type of shader we will be creating.
      * @param resId The resource ID of the raw text file about to be turned into a shader.
      * @return The shader object handler.
+     * 根据raw文件的代码，设置着色器
      */
     private int loadGLShader(int type, int resId) {
         String code = readRawTextFile(resId);
@@ -284,6 +285,7 @@ public class BoxGame3DActivity extends GvrActivity implements GvrView.StereoRend
         floorColors.put(WorldLayoutData.FLOOR_COLORS);
         floorColors.position(0);
 
+        //提取shader文件中的代码
         int vertexShader = loadGLShader(GLES20.GL_VERTEX_SHADER, R.raw.light_vertex);
         int gridShader = loadGLShader(GLES20.GL_FRAGMENT_SHADER, R.raw.grid_fragment);
         int passthroughShader = loadGLShader(GLES20.GL_FRAGMENT_SHADER, R.raw.passthrough_fragment);
@@ -365,6 +367,7 @@ public class BoxGame3DActivity extends GvrActivity implements GvrView.StereoRend
 
         // Update the sound location to match it with the new cube position.
         if (sourceId != GvrAudioEngine.INVALID_ID) {
+            Log.e("vr","点击");
             gvrAudioEngine.setSoundObjectPosition(
                     sourceId, modelPosition[0], modelPosition[1], modelPosition[2]);
         }
@@ -373,9 +376,9 @@ public class BoxGame3DActivity extends GvrActivity implements GvrView.StereoRend
 
     /**
      * Converts a raw text file into a string.
-     *
      * @param resId The resource ID of the raw text file about to be turned into a shader.
      * @return The context of the text file, or null in case of error.
+     *读取raw文件中的代码，并返回
      */
     private String readRawTextFile(int resId) {
         InputStream inputStream = getResources().openRawResource(resId);
@@ -540,9 +543,10 @@ public class BoxGame3DActivity extends GvrActivity implements GvrView.StereoRend
      */
     @Override
     public void onCardboardTrigger() {
-        Log.e(TAG, "onCardboardTrigger");
+        Log.e(TAG, "onCardboardTrigger:点击屏幕");
 
         if (isLookingAtObject()) {
+            Log.e(TAG, "onCardboardTrigger:是否看到box");
             successSourceId = gvrAudioEngine.createStereoSound(SUCCESS_SOUND_FILE);
             gvrAudioEngine.playSound(successSourceId, false /* looping disabled */);
             hideObject();

@@ -170,18 +170,19 @@ public class OrientationView extends GLSurfaceView {
     @Override
     public final void onSurfaceCreated(GL10 unused, EGLConfig config) {
       // Set up shaders
+      //// 将源码添加到shader并编译之
       int vertexShader = GLES20.glCreateShader(GLES20.GL_VERTEX_SHADER);
       GLES20.glShaderSource(vertexShader, vertexShaderCode);
       GLES20.glCompileShader(vertexShader);
-
+      // 将源码添加到shader并编译之
       int fragmentShader = GLES20.glCreateShader(GLES20.GL_FRAGMENT_SHADER);
       GLES20.glShaderSource(fragmentShader, fragmentShaderCode);
       GLES20.glCompileShader(fragmentShader);
 
-      program = GLES20.glCreateProgram();
-      GLES20.glAttachShader(program, vertexShader);
-      GLES20.glAttachShader(program, fragmentShader);
-      GLES20.glLinkProgram(program);
+      program = GLES20.glCreateProgram();             // 创建一个空的OpenGL ES Program
+      GLES20.glAttachShader(program, vertexShader);   // 将vertex shader添加到program
+      GLES20.glAttachShader(program, fragmentShader);// 将fragment shader添加到program
+      GLES20.glLinkProgram(program);                 // 创建可执行的 OpenGL ES program
 
       int[] linkStatus = new int[1];
       GLES20.glGetProgramiv(program, GLES20.GL_LINK_STATUS, linkStatus, 0);
@@ -276,6 +277,7 @@ public class OrientationView extends GLSurfaceView {
     @Override
     public final void onDrawFrame(GL10 unused) {
       GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
+      // 将program加入OpenGL ES环境中
       GLES20.glUseProgram(program);
 
       // Set up camera.
@@ -283,6 +285,7 @@ public class OrientationView extends GLSurfaceView {
 
       // Convert world space to head space.
       Matrix.translateM(tmpMatrix1, 0, 0, 0, -VIEW_SIZE);
+      //计算投影和视口变换
       Matrix.multiplyMM(tmpMatrix2, 0, tmpMatrix1, 0, phoneInWorldSpaceMatrix, 0);
 
       // Phone's Z faces up. We need it to face toward the user.
