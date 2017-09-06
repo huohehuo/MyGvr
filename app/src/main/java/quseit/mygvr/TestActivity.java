@@ -6,6 +6,7 @@ import android.opengl.Matrix;
 import android.os.Bundle;
 import android.os.Vibrator;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.google.vr.sdk.audio.GvrAudioEngine;
 import com.google.vr.sdk.base.AndroidCompat;
@@ -29,13 +30,16 @@ public class TestActivity extends GvrActivity implements GvrView.StereoRenderer 
     protected float[] modelCube;
     protected float[] modelPosition;
 
+    protected float[] modelCube2;
+    protected float[] modelPosition2;
+
     private static final String TAG = "BoxGame3DActivity";
 
     private static final float Z_NEAR = 0.1f;
     private static final float Z_FAR = 100.0f;
 
     private static final float CAMERA_Z = 0.01f;
-    private static final float TIME_DELTA = 0.3f;
+    private static final float TIME_DELTA = 1.8f;
 
     private static final float YAW_LIMIT = 0.12f;
     private static final float PITCH_LIMIT = 0.12f;
@@ -55,20 +59,21 @@ public class TestActivity extends GvrActivity implements GvrView.StereoRenderer 
     private static final String SUCCESS_SOUND_FILE = "success.wav";
 
     private final float[] lightPosInEyeSpace = new float[4];
-
+    //floor
     private FloatBuffer floorVertices;
     private FloatBuffer floorColors;
     private FloatBuffer floorNormals;
-
+    //box1
     private FloatBuffer cubeVertices;
     private FloatBuffer cubeColors;
     private FloatBuffer cubeFoundColors;
     private FloatBuffer cubeNormals;
 
-//    private FloatBuffer cubeVertices2;
-//    private FloatBuffer cubeColors2;
-//    private FloatBuffer cubeFoundColors2;
-//    private FloatBuffer cubeNormals2;
+    //box2
+    private FloatBuffer cubeVertices2;
+    private FloatBuffer cubeColors2;
+    private FloatBuffer cubeFoundColors2;
+    private FloatBuffer cubeNormals2;
 
     private int cubeProgram;
     private int floorProgram;
@@ -81,16 +86,16 @@ public class TestActivity extends GvrActivity implements GvrView.StereoRenderer 
     private int cubeModelViewProjectionParam;
     private int cubeLightPosParam;
 
-//    private int cubeProgram2;
-//    private int floorProgram2;
-//
-//    private int cubePositionParam2;
-//    private int cubeNormalParam2;
-//    private int cubeColorParam2;
-//    private int cubeModelParam2;
-//    private int cubeModelViewParam2;
-//    private int cubeModelViewProjectionParam2;
-//    private int cubeLightPosParam2;
+    private int cubeProgram2;
+    private int floorProgram2;
+
+    private int cubePositionParam2;
+    private int cubeNormalParam2;
+    private int cubeColorParam2;
+    private int cubeModelParam2;
+    private int cubeModelViewParam2;
+    private int cubeModelViewProjectionParam2;
+    private int cubeLightPosParam2;
 
     private int floorPositionParam;
     private int floorNormalParam;
@@ -171,6 +176,7 @@ public class TestActivity extends GvrActivity implements GvrView.StereoRenderer 
         initializeGvrView();
 
         modelCube = new float[16];
+        modelCube2 = new float[16];
         camera = new float[16];
         view = new float[16];
         modelViewProjection = new float[16];
@@ -179,6 +185,7 @@ public class TestActivity extends GvrActivity implements GvrView.StereoRenderer 
         tempPosition = new float[4];
         // Model first appears directly in front of user.
         modelPosition = new float[] {0.0f, 0.0f, -MAX_MODEL_DISTANCE / 2.0f};
+        modelPosition2 = new float[] {0.0f, 0.0f, -MAX_MODEL_DISTANCE / 2.0f};
         headRotation = new float[4];
         headView = new float[16];
 
@@ -237,98 +244,16 @@ public class TestActivity extends GvrActivity implements GvrView.StereoRenderer 
     public void onSurfaceCreated(EGLConfig config) {
         Log.e(TAG, "onSurfaceCreated创建");
         GLES20.glClearColor(0.1f, 0.1f, 0.1f, 0.5f); // Dark background so text shows up well.
-
-        initOneBox();
-
-//        initTwoBox();
-
-
-        // make a floor底部地面布局
-        ByteBuffer bbFloorVertices = ByteBuffer.allocateDirect(TestLayoutData.FLOOR_COORDS.length * 4);
-        bbFloorVertices.order(ByteOrder.nativeOrder());
-        floorVertices = bbFloorVertices.asFloatBuffer();
-        floorVertices.put(TestLayoutData.FLOOR_COORDS);
-        floorVertices.position(0);
-
-        //正常状态的底部地面
-        ByteBuffer bbFloorNormals = ByteBuffer.allocateDirect(TestLayoutData.FLOOR_NORMALS.length * 4);
-        bbFloorNormals.order(ByteOrder.nativeOrder());
-        floorNormals = bbFloorNormals.asFloatBuffer();
-        floorNormals.put(TestLayoutData.FLOOR_NORMALS);
-        floorNormals.position(0);
-
-        //底部地面颜色设置
-        ByteBuffer bbFloorColors = ByteBuffer.allocateDirect(TestLayoutData.FLOOR_COLORS.length * 4);
-        bbFloorColors.order(ByteOrder.nativeOrder());
-        floorColors = bbFloorColors.asFloatBuffer();
-        floorColors.put(TestLayoutData.FLOOR_COLORS);
-        floorColors.position(0);
-
         //提取shader文件中的代码
         int vertexShader = loadGLShader(GLES20.GL_VERTEX_SHADER, R.raw.test_light_vertex);
         int gridShader = loadGLShader(GLES20.GL_FRAGMENT_SHADER, R.raw.test_grid_fragment);
         int passthroughShader = loadGLShader(GLES20.GL_FRAGMENT_SHADER, R.raw.test_passthrough_fragment);
 
-        cubeProgram = GLES20.glCreateProgram();
-        GLES20.glAttachShader(cubeProgram, vertexShader);
-        GLES20.glAttachShader(cubeProgram, passthroughShader);
-        GLES20.glLinkProgram(cubeProgram);
-        GLES20.glUseProgram(cubeProgram);
+        initOneBox(vertexShader,passthroughShader);
 
-        checkGLError("Cube program");
+        initTwoBox(vertexShader,passthroughShader);
 
-        //获取着色器程序中，指定为attribute类型变量的id。
-        //获取指向着色器中aPosition的index
-        cubePositionParam = GLES20.glGetAttribLocation(cubeProgram, "a_Position");
-        cubeNormalParam = GLES20.glGetAttribLocation(cubeProgram, "a_Normal");
-        cubeColorParam = GLES20.glGetAttribLocation(cubeProgram, "a_Color");
-
-
-        //获取着色器程序中，指定为uniform类型变量的id。
-        cubeModelParam = GLES20.glGetUniformLocation(cubeProgram, "u_Model");
-        cubeModelViewParam = GLES20.glGetUniformLocation(cubeProgram, "u_MVMatrix");
-        cubeModelViewProjectionParam = GLES20.glGetUniformLocation(cubeProgram, "u_MVP");
-        cubeLightPosParam = GLES20.glGetUniformLocation(cubeProgram, "u_LightPos");
-
-//        cubeProgram2 = GLES20.glCreateProgram();
-//        GLES20.glAttachShader(cubeProgram2, vertexShader);
-//        GLES20.glAttachShader(cubeProgram2, passthroughShader);
-//        GLES20.glLinkProgram(cubeProgram2);
-//        GLES20.glUseProgram(cubeProgram2);
-//
-//
-//        cubePositionParam2 = GLES20.glGetAttribLocation(cubeProgram2, "a_Position");
-//        cubeNormalParam2 = GLES20.glGetAttribLocation(cubeProgram2, "a_Normal");
-//        cubeColorParam2 = GLES20.glGetAttribLocation(cubeProgram2, "a_Color");
-//
-//        cubeModelParam2 = GLES20.glGetUniformLocation(cubeProgram2, "u_Model");
-//        cubeModelViewParam2 = GLES20.glGetUniformLocation(cubeProgram2, "u_MVMatrix");
-//        cubeModelViewProjectionParam2 = GLES20.glGetUniformLocation(cubeProgram2, "u_MVP");
-//        cubeLightPosParam2 = GLES20.glGetUniformLocation(cubeProgram2, "u_LightPos");
-
-        checkGLError("Cube program params");
-
-        floorProgram = GLES20.glCreateProgram();
-        GLES20.glAttachShader(floorProgram, vertexShader);
-        GLES20.glAttachShader(floorProgram, gridShader);
-        GLES20.glLinkProgram(floorProgram);
-        GLES20.glUseProgram(floorProgram);
-
-        checkGLError("Floor program");
-
-        floorModelParam = GLES20.glGetUniformLocation(floorProgram, "u_Model");
-        floorModelViewParam = GLES20.glGetUniformLocation(floorProgram, "u_MVMatrix");
-        floorModelViewProjectionParam = GLES20.glGetUniformLocation(floorProgram, "u_MVP");
-        floorLightPosParam = GLES20.glGetUniformLocation(floorProgram, "u_LightPos");
-
-        floorPositionParam = GLES20.glGetAttribLocation(floorProgram, "a_Position");
-        floorNormalParam = GLES20.glGetAttribLocation(floorProgram, "a_Normal");
-        floorColorParam = GLES20.glGetAttribLocation(floorProgram, "a_Color");
-
-        checkGLError("Floor program params");
-
-        Matrix.setIdentityM(modelFloor, 0);
-        Matrix.translateM(modelFloor, 0, 0, -floorDepth, 0); // Floor appears below user.
+        initFloor(vertexShader,gridShader);
 
         // Avoid any delays during start-up due to decoding of sound files.
 //        new Thread(
@@ -353,9 +278,11 @@ public class TestActivity extends GvrActivity implements GvrView.StereoRenderer 
 
         checkGLError("onSurfaceCreated");
     }
-    private void initOneBox(){
+    private void initOneBox(int vertexShader,int passthroughShader){
+        //申请底层空间
         ByteBuffer bbVertices = ByteBuffer.allocateDirect(TestLayoutData.CUBE_COORDS.length * 4);
         bbVertices.order(ByteOrder.nativeOrder());
+        //将坐标数据转换为FloatBuffer，用以传入给OpenGL ES程序
         cubeVertices = bbVertices.asFloatBuffer();
         cubeVertices.put(TestLayoutData.CUBE_COORDS);
         cubeVertices.position(0);
@@ -381,44 +308,137 @@ public class TestActivity extends GvrActivity implements GvrView.StereoRenderer 
         cubeNormals = bbNormals.asFloatBuffer();
         cubeNormals.put(TestLayoutData.CUBE_NORMALS);
         cubeNormals.position(0);
+
+        //创建一个空的OpenGLES程序
+        cubeProgram = GLES20.glCreateProgram();
+        //将顶点着色器加入到程序
+        GLES20.glAttachShader(cubeProgram, vertexShader);
+        //将片元着色器加入到程序中
+        GLES20.glAttachShader(cubeProgram, passthroughShader);
+        //连接到着色器程序
+        GLES20.glLinkProgram(cubeProgram);
+        //将程序加入到OpenGLES2.0环境
+        GLES20.glUseProgram(cubeProgram);
+
+        checkGLError("Cube program");
+
+        //获取着色器程序中，指定为attribute类型变量的id。
+        //获取指向着色器中aPosition的index
+        cubePositionParam = GLES20.glGetAttribLocation(cubeProgram, "a_Position");
+        cubeNormalParam = GLES20.glGetAttribLocation(cubeProgram, "a_Normal");
+        cubeColorParam = GLES20.glGetAttribLocation(cubeProgram, "a_Color");
+
+
+        //获取着色器程序中，指定为uniform类型变量的id。
+        cubeModelParam = GLES20.glGetUniformLocation(cubeProgram, "u_Model");
+        cubeModelViewParam = GLES20.glGetUniformLocation(cubeProgram, "u_MVMatrix");
+        cubeModelViewProjectionParam = GLES20.glGetUniformLocation(cubeProgram, "u_MVP");
+        cubeLightPosParam = GLES20.glGetUniformLocation(cubeProgram, "u_LightPos");
+
+        checkGLError("Cube program params");
+
     }
 
-//    private void initTwoBox(){
-//        ByteBuffer bbVertices2 = ByteBuffer.allocateDirect(TestLayoutData.CUBE_COORDS_TWO.length * 4);
-//        bbVertices2.order(ByteOrder.nativeOrder());
-//        cubeVertices2 = bbVertices2.asFloatBuffer();
-//        cubeVertices2.put(TestLayoutData.CUBE_COORDS_TWO);
-//        cubeVertices2.position(0);
-//
-//        //未处于视线中心的五颜六色方块
-//        ByteBuffer bbColors2 = ByteBuffer.allocateDirect(TestLayoutData.CUBE_COLORS.length * 4);
-//        bbColors2.order(ByteOrder.nativeOrder());
-//        cubeColors2 = bbColors2.asFloatBuffer();
-//        cubeColors2.put(TestLayoutData.CUBE_COLORS);
-//        cubeColors2.position(0);
-//
-//        //处于视线中心时的方块颜色（全为yellow）
-//        ByteBuffer bbFoundColors2 =
-//                ByteBuffer.allocateDirect(TestLayoutData.CUBE_FOUND_COLORS.length * 4);
-//        bbFoundColors2.order(ByteOrder.nativeOrder());
-//        cubeFoundColors2 = bbFoundColors2.asFloatBuffer();
-//        cubeFoundColors2.put(TestLayoutData.CUBE_FOUND_COLORS);
-//        cubeFoundColors2.position(0);
-//
-//        //正常状态下的正多面体
-//        ByteBuffer bbNormals2 = ByteBuffer.allocateDirect(TestLayoutData.CUBE_NORMALS.length * 4);
-//        bbNormals2.order(ByteOrder.nativeOrder());
-//        cubeNormals2 = bbNormals2.asFloatBuffer();
-//        cubeNormals2.put(TestLayoutData.CUBE_NORMALS);
-//        cubeNormals2.position(0);
-//    }
+    private void initTwoBox(int vertexShader,int passthroughShader){
+        ByteBuffer bbVertices2 = ByteBuffer.allocateDirect(TestLayoutData.CUBE_COORDS_TWO.length * 4);
+        bbVertices2.order(ByteOrder.nativeOrder());
+        cubeVertices2 = bbVertices2.asFloatBuffer();
+        cubeVertices2.put(TestLayoutData.CUBE_COORDS_TWO);
+        cubeVertices2.position(0);
 
+        //未处于视线中心的五颜六色方块
+        ByteBuffer bbColors2 = ByteBuffer.allocateDirect(TestLayoutData.CUBE_COLORS.length * 4);
+        bbColors2.order(ByteOrder.nativeOrder());
+        cubeColors2 = bbColors2.asFloatBuffer();
+        cubeColors2.put(TestLayoutData.CUBE_COLORS);
+        cubeColors2.position(0);
+
+        //处于视线中心时的方块颜色（全为yellow）
+        ByteBuffer bbFoundColors2 =
+                ByteBuffer.allocateDirect(TestLayoutData.CUBE_FOUND_COLORS.length * 4);
+        bbFoundColors2.order(ByteOrder.nativeOrder());
+        cubeFoundColors2 = bbFoundColors2.asFloatBuffer();
+        cubeFoundColors2.put(TestLayoutData.CUBE_FOUND_COLORS);
+        cubeFoundColors2.position(0);
+
+        //正常状态下的正多面体
+        ByteBuffer bbNormals2 = ByteBuffer.allocateDirect(TestLayoutData.CUBE_NORMALS.length * 4);
+        bbNormals2.order(ByteOrder.nativeOrder());
+        cubeNormals2 = bbNormals2.asFloatBuffer();
+        cubeNormals2.put(TestLayoutData.CUBE_NORMALS);
+        cubeNormals2.position(0);
+
+        cubeProgram2 = GLES20.glCreateProgram();
+        GLES20.glAttachShader(cubeProgram2, vertexShader);
+        GLES20.glAttachShader(cubeProgram2, passthroughShader);
+        GLES20.glLinkProgram(cubeProgram2);
+        GLES20.glUseProgram(cubeProgram2);
+
+
+        cubePositionParam2 = GLES20.glGetAttribLocation(cubeProgram2, "a_Position");
+        cubeNormalParam2 = GLES20.glGetAttribLocation(cubeProgram2, "a_Normal");
+        cubeColorParam2 = GLES20.glGetAttribLocation(cubeProgram2, "a_Color");
+
+        cubeModelParam2 = GLES20.glGetUniformLocation(cubeProgram2, "u_Model");
+        cubeModelViewParam2 = GLES20.glGetUniformLocation(cubeProgram2, "u_MVMatrix");
+        cubeModelViewProjectionParam2 = GLES20.glGetUniformLocation(cubeProgram2, "u_MVP");
+        cubeLightPosParam2 = GLES20.glGetUniformLocation(cubeProgram2, "u_LightPos");
+
+    }
+
+    private void initFloor(int vertexShader,int gridShader){
+        // make a floor底部地面布局
+        ByteBuffer bbFloorVertices = ByteBuffer.allocateDirect(TestLayoutData.FLOOR_COORDS.length * 4);
+        bbFloorVertices.order(ByteOrder.nativeOrder());
+        floorVertices = bbFloorVertices.asFloatBuffer();
+        floorVertices.put(TestLayoutData.FLOOR_COORDS);
+        floorVertices.position(0);
+
+        //正常状态的底部地面
+        ByteBuffer bbFloorNormals = ByteBuffer.allocateDirect(TestLayoutData.FLOOR_NORMALS.length * 4);
+        bbFloorNormals.order(ByteOrder.nativeOrder());
+        floorNormals = bbFloorNormals.asFloatBuffer();
+        floorNormals.put(TestLayoutData.FLOOR_NORMALS);
+        floorNormals.position(0);
+
+        //底部地面颜色设置
+        ByteBuffer bbFloorColors = ByteBuffer.allocateDirect(TestLayoutData.FLOOR_COLORS.length * 4);
+        bbFloorColors.order(ByteOrder.nativeOrder());
+        floorColors = bbFloorColors.asFloatBuffer();
+        floorColors.put(TestLayoutData.FLOOR_COLORS);
+        floorColors.position(0);
+
+        floorProgram = GLES20.glCreateProgram();
+        GLES20.glAttachShader(floorProgram, vertexShader);
+        GLES20.glAttachShader(floorProgram, gridShader);
+        GLES20.glLinkProgram(floorProgram);
+        GLES20.glUseProgram(floorProgram);
+
+        checkGLError("Floor program");
+
+        floorModelParam = GLES20.glGetUniformLocation(floorProgram, "u_Model");
+        floorModelViewParam = GLES20.glGetUniformLocation(floorProgram, "u_MVMatrix");
+        floorModelViewProjectionParam = GLES20.glGetUniformLocation(floorProgram, "u_MVP");
+        floorLightPosParam = GLES20.glGetUniformLocation(floorProgram, "u_LightPos");
+
+        floorPositionParam = GLES20.glGetAttribLocation(floorProgram, "a_Position");
+        floorNormalParam = GLES20.glGetAttribLocation(floorProgram, "a_Normal");
+        floorColorParam = GLES20.glGetAttribLocation(floorProgram, "a_Color");
+
+        checkGLError("Floor program params");
+
+        Matrix.setIdentityM(modelFloor, 0);
+        Matrix.translateM(modelFloor, 0, 0, -floorDepth, 0); // Floor appears below user.
+    }
     /**
      * Updates the cube model position.
      */
     protected void updateModelPosition() {
         Matrix.setIdentityM(modelCube, 0);
         Matrix.translateM(modelCube, 0, modelPosition[0], modelPosition[1], modelPosition[2]);
+
+        Matrix.setIdentityM(modelCube2, 0);
+        Matrix.translateM(modelCube2, 0, modelPosition2[0], modelPosition2[1], modelPosition2[2]);
 
         // Update the sound location to match it with the new cube position.
 //        if (sourceId != GvrAudioEngine.INVALID_ID) {
@@ -459,7 +479,7 @@ public class TestActivity extends GvrActivity implements GvrView.StereoRenderer 
      */
     @Override
     public void onNewFrame(HeadTransform headTransform) {
-//        setCubeRotation();
+//        setCubeRotation();//旋转
 
         // Build the camera matrix and apply it to the ModelView.
         Matrix.setLookAtM(camera, 0, 0.0f, 0.0f, CAMERA_Z, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
@@ -476,10 +496,6 @@ public class TestActivity extends GvrActivity implements GvrView.StereoRenderer 
         checkGLError("onReadyToDraw");
     }
 
-    //设置立方体旋转矩阵
-    protected void setCubeRotation() {
-        Matrix.rotateM(modelCube, 0, TIME_DELTA, 0.5f, 0.5f, 1.0f);
-    }
 
     /**
      * Draws a frame for an eye.
@@ -505,11 +521,15 @@ public class TestActivity extends GvrActivity implements GvrView.StereoRenderer 
         Matrix.multiplyMM(modelView, 0, view, 0, modelCube, 0);
         Matrix.multiplyMM(modelViewProjection, 0, perspective, 0, modelView, 0);
         drawCube();
-//        drawCubeTwo();
+
+        float[] perspective2 = eye.getPerspective(Z_NEAR, Z_FAR);
+        Matrix.multiplyMM(modelView, 0, view, 0, modelCube2, 0);
+        Matrix.multiplyMM(modelViewProjection, 0, perspective2, 0, modelView, 0);
+        drawCubeTwo();
 
         // Set modelView for the floor, so we draw floor in the correct location
         Matrix.multiplyMM(modelView, 0, view, 0, modelFloor, 0);
-        Matrix.multiplyMM(modelViewProjection, 0, perspective, 0, modelView, 0);
+        Matrix.multiplyMM(modelViewProjection, 0, perspective2, 0, modelView, 0);
         drawFloor();
     }
 
@@ -551,6 +571,7 @@ public class TestActivity extends GvrActivity implements GvrView.StereoRenderer 
         GLES20.glEnableVertexAttribArray(cubeNormalParam);
         GLES20.glEnableVertexAttribArray(cubeColorParam);
         // 图形绘制
+        //第一个参数表示绘制方式，第二个参数表示偏移量，第三个参数表示顶点个数
         GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, 36);
 
         // Disable vertex arrays
@@ -561,45 +582,45 @@ public class TestActivity extends GvrActivity implements GvrView.StereoRenderer 
         checkGLError("Drawing cube");
     }
 
-//    public void drawCubeTwo() {
-//        //使用shader程序
-//        GLES20.glUseProgram(cubeProgram2);
-//
-//        GLES20.glUniform3fv(cubeLightPosParam2, 1, lightPosInEyeSpace, 0);
-//
-//        // Set the Model in the shader, used to calculate lighting
-//        //// 将最终变换矩阵传入shader程序
-//        GLES20.glUniformMatrix4fv(cubeModelParam2, 1, false, modelCube, 0);
-//
-//        // Set the ModelView in the shader, used to calculate lighting
-//        GLES20.glUniformMatrix4fv(cubeModelViewParam2, 1, false, modelView, 0);
-//
-//        // Set the position of the cube
-//        GLES20.glVertexAttribPointer(
-//                cubePositionParam2, COORDS_PER_VERTEX, GLES20.GL_FLOAT, false, 0, cubeVertices);
-//
-//        // Set the ModelViewProjection matrix in the shader.
-//        GLES20.glUniformMatrix4fv(cubeModelViewProjectionParam2, 1, false, modelViewProjection, 0);
-//
-//        // Set the normal positions of the cube, again for shading
-//        GLES20.glVertexAttribPointer(cubeNormalParam2, 3, GLES20.GL_FLOAT, false, 0, cubeNormals2);
-//        GLES20.glVertexAttribPointer(cubeColorParam2, 4, GLES20.GL_FLOAT, false, 0,
-//                isLookingAtObject() ? cubeFoundColors2 : cubeColors2);
-//
-//        // Enable vertex arrays
-//        GLES20.glEnableVertexAttribArray(cubePositionParam2);
-//        GLES20.glEnableVertexAttribArray(cubeNormalParam2);
-//        GLES20.glEnableVertexAttribArray(cubeColorParam2);
-//        // 图形绘制
-//        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, 36);
-//
-//        // Disable vertex arrays
-//        GLES20.glDisableVertexAttribArray(cubePositionParam2);
-//        GLES20.glDisableVertexAttribArray(cubeNormalParam2);
-//        GLES20.glDisableVertexAttribArray(cubeColorParam2);
-//
-//        checkGLError("Drawing cube");
-//    }
+    public void drawCubeTwo() {
+        //使用shader程序
+        GLES20.glUseProgram(cubeProgram2);
+
+        GLES20.glUniform3fv(cubeLightPosParam2, 1, lightPosInEyeSpace, 0);
+
+        // Set the Model in the shader, used to calculate lighting
+        //// 将最终变换矩阵传入shader程序
+        GLES20.glUniformMatrix4fv(cubeModelParam2, 1, false, modelCube2, 0);
+
+        // Set the ModelView in the shader, used to calculate lighting
+        GLES20.glUniformMatrix4fv(cubeModelViewParam2, 1, false, modelView, 0);
+
+        // Set the position of the cube
+        GLES20.glVertexAttribPointer(
+                cubePositionParam2, COORDS_PER_VERTEX, GLES20.GL_FLOAT, false, 0, cubeVertices2);
+
+        // Set the ModelViewProjection matrix in the shader.
+        GLES20.glUniformMatrix4fv(cubeModelViewProjectionParam2, 1, false, modelViewProjection, 0);
+
+        // Set the normal positions of the cube, again for shading
+        GLES20.glVertexAttribPointer(cubeNormalParam2, 3, GLES20.GL_FLOAT, false, 0, cubeNormals2);
+        GLES20.glVertexAttribPointer(cubeColorParam2, 4, GLES20.GL_FLOAT, false, 0,
+                isLookingAtObject() ? cubeFoundColors2 : cubeColors2);
+
+        // Enable vertex arrays
+        GLES20.glEnableVertexAttribArray(cubePositionParam2);
+        GLES20.glEnableVertexAttribArray(cubeNormalParam2);
+        GLES20.glEnableVertexAttribArray(cubeColorParam2);
+        // 图形绘制
+        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, 36);
+
+        // Disable vertex arrays
+        GLES20.glDisableVertexAttribArray(cubePositionParam2);
+        GLES20.glDisableVertexAttribArray(cubeNormalParam2);
+        GLES20.glDisableVertexAttribArray(cubeColorParam2);
+
+        checkGLError("Drawing cube");
+    }
 
     /**
      * Draw the floor.
@@ -625,7 +646,7 @@ public class TestActivity extends GvrActivity implements GvrView.StereoRenderer 
         GLES20.glEnableVertexAttribArray(floorNormalParam);
         GLES20.glEnableVertexAttribArray(floorColorParam);
 
-        //绘制面 GLES20.TRIANGLES
+        //绘制面
         GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, 24);
 
         GLES20.glDisableVertexAttribArray(floorPositionParam);
@@ -641,13 +662,13 @@ public class TestActivity extends GvrActivity implements GvrView.StereoRenderer 
     @Override
     public void onCardboardTrigger() {
         Log.e(TAG, "onCardboardTrigger：点击屏幕");
-
         if (isLookingAtObject()) {
             Log.e(TAG, "onCardboardTrigger:...看到我了！");
-            VideoVRActivity.startVideo(TestActivity.this);
+            Toast.makeText(this, "被抓到了....", Toast.LENGTH_SHORT).show();
+//            VideoVRActivity.startVideo(TestActivity.this);
 //            successSourceId = gvrAudioEngine.createStereoSound(SUCCESS_SOUND_FILE);
 //            gvrAudioEngine.playSound(successSourceId, false /* looping disabled */);
-//            hideObject();
+            hideObject();
         }else{
             Log.e(TAG, "onCardboardTrigger:没看到我");
         }
@@ -690,6 +711,14 @@ public class TestActivity extends GvrActivity implements GvrView.StereoRenderer 
         modelPosition[2] = posVec[2];
 
         updateModelPosition();
+    }
+
+
+
+    //设置立方体旋转矩阵
+    protected void setCubeRotation() {
+        Matrix.rotateM(modelCube, 0, TIME_DELTA, 0.0f, 1.0f, 0.0f);
+//        Matrix.rotateM(modelCube2, 0, TIME_DELTA, 2.5f, 0.5f, 0.0f);
     }
 
     /**通过计算对象在眼睛空间中的位置来检查用户是否正在查看对象。

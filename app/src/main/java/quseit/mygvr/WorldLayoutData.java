@@ -70,7 +70,7 @@ public final class WorldLayoutData {
       -1.0f, -1.0f, 1.0f,
       -1.0f, -1.0f, -1.0f,
   };
-
+  // 设置颜色，分别为red, green, blue 和alpha (opacity)
   public static final float[] CUBE_COLORS = new float[] {
       // front, green
       0f, 0.5273f, 0.2656f, 1.0f,

@@ -30,14 +30,24 @@ public class Triangle {
     //三角形的三个顶点坐标
     //OpenGLES 假定[0,0,0](X,Y,Z) 是GLSurfaceView 帧的中心
     static float triangleCoords[] = { // 按逆时针方向顺序:
-            -0.5f,  0.622008459f, 0.5f,   // top
-            -0.5f, -0.311004243f, 0.5f,   // bottom left
-            0.5f, -0.311004243f, 0.5f ,   // bottom right
+            0.0f,  0.622008459f, 0.0f,   // top
+            -0.5f, -0.311004243f, 0.0f,   // bottom left
+            0.5f, -0.311004243f, 0.0f ,   // bottom right
+
+            -0.5f, -0.311004243f, 0.0f,   // bottom left
+            0.0f,-0.922008459f,0.0f,
+            0.5f, -0.311004243f, 0.0f ,   // bottom right
+
+
+
 //            0.5f, 0.622008459f, 0.5f    // bottom right
     };
 
     // 设置颜色，分别为red, green, blue 和alpha (opacity)
-    float color[] = { 0.63671875f, 0.76953125f, 0.22265625f, 1.0f };
+    float color[] = {
+            0.63671875f, 0.76953125f, 0.22265625f, 1.0f,
+            0.23671875f, 0.36953125f, 0.42265625f, 1.0f
+    };
 
     private int mProgram;
     public Triangle() {
@@ -98,7 +108,7 @@ public class Triangle {
         mColorHandle = GLES20.glGetUniformLocation(mProgram, "vColor");
 
         // 设置三角形的颜色
-        GLES20.glUniform4fv(mColorHandle, 1, color, 0);
+        GLES20.glUniform4fv(mColorHandle, 2, color, 0);
 
         // 画三角形
         GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, vertexCount);
